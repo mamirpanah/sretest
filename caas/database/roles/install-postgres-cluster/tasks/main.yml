@@ -14,10 +14,11 @@
   loop:
     - { src: 'cluster.yaml',     dest: 'cluster.yaml' }
     - { src: 'secret.yaml',  dest: 'secret.yaml' }
+    - { src: 'podmonitor.yaml',  dest: 'podmonitor.yaml' }
 
 - name: Apply postgres cluster manifests
   shell: >
-    kubectl apply -f /tmp/manifests/secret.yaml -f /tmp/manifests/cluster.yaml
+    kubectl apply -f /tmp/manifests/secret.yaml -f /tmp/manifests/cluster.yaml -f /tmp/manifests/podmonitor.yaml
   args:
     executable: /bin/bash
   environment:
