@@ -1,0 +1,29 @@
+- name: Create a directory for manifests
+  file:
+    path: "/tmp/manifests"
+    state: directory
+    mode: '0755'
+
+- name: Copy Grafana dashboard and datasource manifests
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "/tmp/manifests/{{ item.dest }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+  loop:
+    - { src: 'grafana-dashboards.yaml',     dest: 'grafana-dashboards.yaml' }
+    - { src: 'grafana-datasources.yaml',  dest: 'grafana-datasources.yaml' }
+
+- name: Apply grafana manifests
+  shell: >
+    kubectl apply -f /tmp/manifests/grafana-dashboards.yaml -f /tmp/manifests/grafana-datasources.yaml
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+
+- name: Delete the directory for helm manifests values
+  file:
+    path: "/tmp/manifests"
+    state: absent

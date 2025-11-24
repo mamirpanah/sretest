@@ -15,10 +15,12 @@ grafana:
     enabled: true
     storageClass: "openebs-hostpath"
     size: 1Gi
+  rbac:
+    create: false
   config:
     security:
       admin_user: "admin"
-      admin_password: "GrafanaChainroot123!@#"
+      admin_password: "Grafana123!@#"
     auth.anonymous:
       enabled: "true"
       org_name: "Main Org."

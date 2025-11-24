@@ -28,7 +28,8 @@ Quickstart
 2. Adjust cluster variables in group_vars/all.yml (k0s version, controller addresses, network CIDR, etc).
 3. Run the playbook:
     - cd /Users/mohammad/Downloads/test/sretest/k0s-ansible
-    - ansible-playbook playbooks/grafana-prometheus.yml
+    - ansible-playbook playbooks/postgres-operator.yml
+    - ansible-playbook playbooks/postgres-cluster.yml
 
 Using ansible.cfg to avoid -i
 -----------------------------
