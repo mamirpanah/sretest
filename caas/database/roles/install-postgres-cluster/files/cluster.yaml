@@ -68,17 +68,17 @@ spec:
 
   enableShmVolume: true
 
-  resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-#      hugepages-2Mi: 128Mi
-#      hugepages-1Gi: 1Gi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-#      hugepages-2Mi: 128Mi
-#      hugepages-1Gi: 1Gi
+#   resources:
+#     requests:
+#       cpu: 200m
+#       memory: 256Mi
+# #      hugepages-2Mi: 128Mi
+# #      hugepages-1Gi: 1Gi
+#     limits:
+#       cpu: 500m
+#       memory: 1Gi
+# #      hugepages-2Mi: 128Mi
+# #      hugepages-1Gi: 1Gi
   patroni:
     failsafe_mode: false
     initdb:
@@ -105,13 +105,13 @@ spec:
       - name: exporter
         containerPort: 9187
         protocol: TCP
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 200Mi
+    # resources:
+    #   limits:
+    #     cpu: 500m
+    #     memory: 256Mi
+    #   requests:
+    #     cpu: 100m
+    #     memory: 200Mi
     env:
     - name: "DATA_SOURCE_URI"
       value: "$(POD_NAME)/postgres?sslmode=require"
