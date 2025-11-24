@@ -1,22 +1,45 @@
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
+apiVersion: v1
+kind: Service
 metadata:
-  name: postgresql
+  name: spilo-postgres-metrics
   namespace: services
+  labels:
+    application: spilo
 spec:
+  clusterIP: None
+  selector:
+    application: spilo
+  ports:
+    - name: exporter
+      port: 9187
+      targetPort: exporter
+      protocol: TCP
+    - name: patroni
+      port: 8008
+      targetPort: 8008
+      protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: spilo-postgres
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - services
   selector:
     matchLabels:
-      application: spilo  # (1)
-  namespaceSelector:
-    any: true  # (2)
-  podMetricsEndpoints:
-    - port: exporter # (3)
+      application: spilo
+  endpoints:
+    - port: exporter
+      path: /metrics
       interval: 15s
       scrapeTimeout: 10s
-    - targetPort: 8008 # (4)
-      interval: 15s
+      honorLabels: true
+    - port: patroni
+      path: /
+      interval: 30s
       scrapeTimeout: 10s
-  podTargetLabels: # (5)
-    - spilo-role
-    - cluster-name
-    - team
