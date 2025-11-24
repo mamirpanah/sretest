@@ -1,0 +1,96 @@
+prometheusOperator:
+  admissionWebhooks:
+    patch:
+      image:
+        registry: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/registry.k8s.io
+alertmanager:
+  image:
+    repository: bitnamilegacy/alertmanager
+  resourcesPreset: "nano"
+  service:
+    type: NodePort
+    nodePort: 30903
+  config:
+    global:
+      resolve_timeout: 5m
+    inhibit_rules:
+      - source_matchers:
+          - 'severity = critical'
+        target_matchers:
+          - 'severity =~ warning|info'
+        equal:
+          - 'namespace'
+          - 'alertname'
+      - source_matchers:
+          - 'severity = warning'
+        target_matchers:
+          - 'severity = info'
+        equal:
+          - 'namespace'
+          - 'alertname'
+      - source_matchers:
+          - 'alertname = InfoInhibitor'
+        target_matchers:
+          - 'severity = info'
+        equal:
+          - 'namespace'
+      - target_matchers:
+          - 'alertname = InfoInhibitor'
+    route:
+      group_by: ["alertname", "severity"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'discord'
+      routes:
+      - receiver: 'discord'
+    receivers:
+      - name: discord
+        discord_configs:
+          - webhook_url: https://discord.com/api/webhooks/1442182252996858077/DUxQt6FaHKkmzNg1-7kfv-mq0UhROwaNlwk4xBKuwRXeh46y3EsO7NxN7-1rQFqc9sFB
+    templates:
+      - '/etc/alertmanager/config/*.tmpl'
+  persistence:
+    enabled: true
+    storageClass: "openebs-hostpath"
+    size: 500Mi
+grafana:
+  enabled: false
+kubeApiServer:
+  enabled: false
+kubelet:
+  serviceMonitor:
+    interval: "60s"
+blackboxExporter:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+nodeExporter:
+  enabled: true
+  operatingSystems:
+    linux:
+      enabled: true
+    aix:
+      enabled: false
+    darwin:
+      enabled: false
+prometheus:
+  service:
+    nodePort: 30090
+    type: NodePort
+  prometheusSpec:
+    retention: 3d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: openebs-hostpath
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 8Gi

@@ -1,0 +1,28 @@
+operator:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/grafana-operator
+  watchNamespace: monitoring
+grafana:
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/grafana
+  labels:
+    dashboards: "grafana"
+  service:
+    type: NodePort
+  persistence:
+    enabled: true
+    storageClass: "openebs-hostpath"
+    size: 1Gi
+  config:
+    security:
+      admin_user: "admin"
+      admin_password: "GrafanaChainroot123!@#"
+    auth.anonymous:
+      enabled: "true"
+      org_name: "Main Org."
+    dashboards:
+      min_refresh_interval: 1s
+    dataproxy:
+      timeout: 300s

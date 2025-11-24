@@ -1,0 +1,22 @@
+---
+- name: Download kubectl binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+    dest: "/tmp/kubectl"
+    mode: '0755'
+
+- name: Move kubectl to destination
+  become: true
+  copy:
+    src: "/tmp/kubectl"
+    dest: "{{ kubectl_dest }}"
+    mode: '0755'
+    remote_src: yes
+
+- name: Verify kubectl version
+  command: kubectl version --client
+  register: kubectl_ver
+  changed_when: false
+
+- debug:
+    msg: "Installed {{ kubectl_ver.stdout }}"

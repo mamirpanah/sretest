@@ -1,0 +1,11 @@
+- name: Install k0s controller
+  hosts: controller
+  become: true
+  roles:
+    - k0s-controller
+    
+- name: Join workers
+  hosts: workers
+  become: true
+  roles:
+    - k0s-worker

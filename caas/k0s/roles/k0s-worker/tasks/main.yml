@@ -1,0 +1,40 @@
+- name: Reset previous installation
+  import_tasks: "../k0s-common/tasks/reset.yml"
+  become: true
+  become_user: root
+  when: reset_cluster is defined
+
+- name: Check if k0s binary exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/k0s
+  register: k0s_bin
+
+- name: Download k0s binary
+  ansible.builtin.get_url:
+    url: "https://github.com/k0sproject/k0s/releases/download/{{ k0s_version }}/k0s-{{ k0s_version }}-amd64"
+    dest: /usr/local/bin/k0s
+    mode: '0755'
+  when: not k0s_bin.stat.exists
+
+- name: Write worker join token to file
+  become: true
+  copy:
+    content: "{{ hostvars[groups['controller'][0]].k0s_worker_token }}"
+    dest: /tmp/k0s_worker_token
+    mode: '0600'
+
+- name: Install worker
+  become: true
+  command: >
+    k0s install worker --token-file /tmp/k0s_worker_token
+  register: worker_install
+  failed_when: >
+    worker_install.rc != 0
+    and 'already installed' not in worker_install.stderr|lower
+    and 'already installed' not in worker_install.stdout|lower
+
+- name: Start worker
+  systemd:
+    name: k0sworker
+    state: started
+    enabled: true
