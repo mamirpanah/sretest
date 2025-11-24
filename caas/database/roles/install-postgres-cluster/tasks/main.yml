@@ -1,0 +1,30 @@
+- name: Create a directory for manifests
+  file:
+    path: "/tmp/manifests"
+    state: directory
+    mode: '0755'
+
+- name: Copy postgres cluster and secret manifests
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "/tmp/manifests/{{ item.dest }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+  loop:
+    - { src: 'cluster.yaml',     dest: 'cluster.yaml' }
+    - { src: 'secret.yaml',  dest: 'secret.yaml' }
+    - { src: 'servicemonitor.yaml',  dest: 'servicemonitor.yaml' }
+
+- name: Apply postgres cluster manifests
+  shell: >
+    kubectl apply -f /tmp/manifests/secret.yaml -f /tmp/manifests/cluster.yaml -f /tmp/manifests/servicemonitor.yaml
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+
+- name: Delete the directory of manifests
+  file:
+    path: "/tmp/manifests"
+    state: absent

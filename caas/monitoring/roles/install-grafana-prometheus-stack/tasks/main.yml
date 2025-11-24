@@ -1,0 +1,63 @@
+- name: Create a directory for helm chart values
+  file:
+    path: "/tmp/chart"
+    state: directory
+    mode: '0755'
+
+- name: Copy Grafana and Prometheus values files
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "/tmp/chart/{{ item.dest }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+  loop:
+    - { src: 'grafana.yaml',     dest: 'grafana.yaml' }
+    - { src: 'prometheus.yaml',  dest: 'prometheus.yaml' }
+
+- name: Install or upgrade grafana-operator
+  shell: >
+    helm upgrade --install grafana-operator oci://registry-1.docker.io/bitnamicharts/grafana-operator
+    --server-side true
+    --version 4.9.37
+    --namespace monitoring
+    --create-namespace
+    --values /tmp/chart/grafana.yaml
+    --wait --timeout 3m
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+  register: helm_result
+  changed_when:
+    - helm_result.rc == 0
+    - >
+      "installed" in helm_result.stdout.lower() or
+      "upgraded" in helm_result.stdout.lower() or
+      "configured" in helm_result.stdout.lower()
+
+- name: Install or upgrade prometheus-stack
+  shell: >
+    helm upgrade --install kube-prometheus-stack oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
+    --server-side true
+    --version 79.7.1
+    --namespace monitoring
+    --create-namespace
+    --values /tmp/chart/prometheus.yaml
+    --wait --timeout 5m
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+  register: helm_result
+  changed_when:
+    - helm_result.rc == 0
+    - >
+      "installed" in helm_result.stdout.lower() or
+      "upgraded" in helm_result.stdout.lower() or
+      "configured" in helm_result.stdout.lower()
+
+- name: Delete the directory for helm chart values
+  file:
+    path: "/tmp/chart"
+    state: absent

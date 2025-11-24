@@ -1,0 +1,47 @@
+---
+- name: Stop k0s service if exists
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+    - k0scontroller
+    - k0sworker
+  ignore_errors: true
+
+- name: Stop k0s
+  command: k0s stop
+  ignore_errors: true
+
+- name: Reset k0s if installed
+  command: k0s reset
+  ignore_errors: true
+
+- name: Remove leftover k0s config and data directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/k0s
+    - /var/lib/k0s
+    - /var/lib/kubelet
+    - /var/log/k0s
+  ignore_errors: true
+
+- name: Remove kubeconfig from home
+  file:
+    path: "{{ home_directory }}/.kube/config"
+    state: absent
+  ignore_errors: true
+
+- name: Remove old systemd unit files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/k0scontroller.service
+    - /etc/systemd/system/k0sworker.service
+  ignore_errors: true
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true

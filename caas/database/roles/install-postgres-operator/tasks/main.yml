@@ -1,0 +1,20 @@
+- name: Install or upgrade postgres-operator
+  shell: >
+    helm repo add postgres-operator-charts https://opensource.zalando.com/postgres-operator/charts/postgres-operator &&
+    helm upgrade --install postgres-operator postgres-operator-charts/postgres-operator
+    --server-side true
+    --version 1.14.0
+    --namespace services
+    --create-namespace
+    --wait --timeout 3m
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+  register: helm_result
+  changed_when:
+    - helm_result.rc == 0
+    - >
+      "installed" in helm_result.stdout.lower() or
+      "upgraded" in helm_result.stdout.lower() or
+      "configured" in helm_result.stdout.lower()

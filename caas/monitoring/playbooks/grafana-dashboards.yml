@@ -1,0 +1,5 @@
+- name: Install k0s controller
+  hosts: controller
+  become: true
+  roles:
+    - configure-grafana-dashboards

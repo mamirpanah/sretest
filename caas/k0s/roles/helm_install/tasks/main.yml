@@ -1,0 +1,28 @@
+---
+- name: Download helm tar.gz
+  get_url:
+    url: "https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz"
+    dest: "/tmp/helm-{{ helm_version }}.tar.gz"
+
+- name: Extract helm binary
+  unarchive:
+    src: "/tmp/helm-{{ helm_version }}.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Move helm to destination
+  become: true
+  copy:
+    src: "/tmp/helm"
+    dest: "{{ helm_dest }}"
+    mode: '0755'
+    remote_src: yes
+
+- name: Verify helm version
+  command: helm version
+  register: helm_ver
+  changed_when: false
+
+- debug:
+    msg: "Installed {{ helm_ver.stdout }}"
