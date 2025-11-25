@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# Alembic cache
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# Local DB
+*.db
+
+# MacOS files
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# GeoIP unnecessary files
+geoip/*.gz
+geoip/*.tar
