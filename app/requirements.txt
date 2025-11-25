@@ -1,0 +1,5 @@
+Flask==3.0.2
+SQLAlchemy==2.0.34
+alembic==1.14.0
+geoip2==4.8.0
+psycopg[binary]==3.2.13
