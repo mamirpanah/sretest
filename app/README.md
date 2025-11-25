@@ -48,6 +48,19 @@ sretest/
    pip install -r requirements.txt
    ```
 
+## Running with Docker
+
+1. **Building the Dockerfile**
+   ```bash
+   docker build -t geoip-api .
+   ```
+
+2. **Running the Dockerfile**
+
+   ```bash
+   docker run -p 8080:8080 -e DATABASE_URL="postgresql+psycopg://user:pass@host:5432/dbname" geoip-api
+   ```
+
 ## Database Setup
 
 Edit `alembic.ini`:
