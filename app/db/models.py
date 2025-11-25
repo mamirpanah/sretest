@@ -3,11 +3,18 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+
 class RequestLog(Base):
     __tablename__ = "request_logs"
 
     id = Column(Integer, primary_key=True)
-    ip_address = Column(String, nullable=False)
+    ip = Column(String, nullable=False)
+    user_agent = Column(String, nullable=False)
     country = Column(String, nullable=False)
-    user_agent = Column(String, nullable=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+class CountryStats(Base):
+    __tablename__ = "country_stats"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    country = Column(String, unique=True, nullable=False)
+    request_count = Column(Integer, nullable=False, default=0)

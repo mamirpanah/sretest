@@ -81,4 +81,14 @@ python app.py
 
 The API will start at:
 
-[http://localhost:8080/api/country](http://localhost:8080/api/country)
+[http://localhost:8080/api/v1/country](http://localhost:8080/api/v1/country)
+
+For metrics:
+
+[http://localhost:8080/metrics](http://localhost:8080/metrics)
+
+For testing the api with predefined ip:
+
+```bash
+curl -H "X-Forwarded-For: 8.8.8.8" http://localhost:8080/api/v1/country
+```
