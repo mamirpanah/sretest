@@ -1,0 +1,47 @@
+- name: Create a directory for helm chart
+  file:
+    path: "/tmp/chart"
+    state: directory
+    mode: '0755'
+
+- name: Copy geoip-api-chart directory to remote host
+  copy:
+    src: "geoip-api-chart"
+    dest: "/tmp/chart/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+    remote_src: no
+
+- name: Render values.yaml from template
+  template:
+    src: "values.yaml.j2"
+    dest: "/tmp/chart/geoip-api-chart/values.yaml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Install or upgrade geoip-api helm chart
+  shell: >
+    helm upgrade --install geoip-api /tmp/chart/geoip-api-chart
+    --namespace prod
+    --create-namespace
+    --values /tmp/chart/geoip-api-chart/values.yaml
+    --set image.tag={{ image_tag }}
+    --wait --timeout 10m
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+  register: helm_result
+  changed_when:
+    - helm_result.rc == 0
+    - >
+      "installed" in helm_result.stdout.lower() or
+      "upgraded" in helm_result.stdout.lower() or
+      "configured" in helm_result.stdout.lower()
+
+- name: Delete the temporary chart directory
+  file:
+    path: "/tmp/chart"
+    state: absent

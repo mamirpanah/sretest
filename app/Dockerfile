@@ -10,6 +10,6 @@ FROM cgr.dev/chainguard/python:latest
 USER nonroot
 WORKDIR /app
 COPY --from=builder --chown=nonroot:nonroot /app /app
-ENV PATH="/app/venv/bin:${PATH}"
+ENV PATH="/app/venv/bin:${PATH}" DATABASE_URL=""
 EXPOSE 8080
 ENTRYPOINT ["python", "start.py"]
