@@ -69,6 +69,8 @@ jobs:
           ansible-playbook playbooks/install-app.yml \
             --private-key ~/.ssh/id_rsa \
             --vault-password-file ./vault-pass.txt \
-            -e "image_tag=${{ needs.build-and-push.outputs.tag }}"
+            -e "image_tag=${{ needs.build-and-push.outputs.tag }}" \
+            -e "ansible_ssh_private_key_file=~/.ssh/id_rsa" \
+            -e "ansible_user=ubuntu"
         env:
           ANSIBLE_HOST_KEY_CHECKING: "false"
