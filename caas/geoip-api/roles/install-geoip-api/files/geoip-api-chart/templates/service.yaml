@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "geoip-api.fullname" . }}
+  labels:
+    {{- include "geoip-api.labels" . | nindent 4 }}
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "geoip-api.selectorLabels" . | nindent 4 }}

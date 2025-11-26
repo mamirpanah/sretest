@@ -1,0 +1,19 @@
+{{- if .Values.customConfigMap.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.customConfigMap.config.name }}
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride | quote }}
+  labels:
+    {{- include "geoip-api.labels" . | nindent 4 }}
+    {{- with .Values.customConfigMap.config.exteraLabels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- if .Values.customConfigMap.config.annotations }}
+  annotations:
+{{ toYaml .Values.customConfigMap.config.annotations | indent 4 }}
+{{- end }}
+data:
+{{ toYaml (default dict .Values.customConfigMap.config.data) | indent 2 }}
+{{- end }}
+

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "geoip-api.fullname" . }}-test-connection"
+  labels:
+    {{- include "geoip-api.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "geoip-api.fullname" . }}:{{ .Values.metrics.service.servicePort }}']
+  restartPolicy: Never

@@ -1,45 +1,75 @@
-name: Build & Push Docker Image on Tag
+# .github/workflows/docker-cd.yml
+name: Build & Deploy on Tag
 
 on:
   push:
     tags:
-      - 'v*.*.*'        # Only trigger on semver tags like v1.0.0, v2.3.4
+      - 'v*.*.*'
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write          # Needed to push to ghcr.io
-
+      packages: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract tag name
+      - name: Extract tag
         id: tag
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./app                  # ← Dockerfile is in app/
+          context: ./app
           file: ./app/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/geoip-api:${{ steps.tag.outputs.tag }}
-            ghcr.io/${{ github.repository }}/geoip-api:latest
-          labels: |
-            org.opencontainers.image.source=${{ github.event.repository.html_url }}
-            org.opencontainers.image.version=${{ steps.tag.outputs.tag }}
-            org.opencontainers.image.revision=${{ github.sha }}
+            ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}
+            ghcr.io/${{ github.repository }}:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/caas/geoip-api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Write SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Write Ansible Vault password file
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > vault-pass.txt
+          chmod 600 vault-pass.txt
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook playbooks/install-app.yml \
+            -i inventory \
+            --private-key ~/.ssh/id_rsa \
+            --vault-password-file vault-pass.txt \
+            -e "image_tag=${{ needs.build-and-push.outputs.tag }}"
