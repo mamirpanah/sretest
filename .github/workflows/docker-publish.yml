@@ -45,35 +45,31 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app/caas/geoip-api     # ← now safe because checkout runs first
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          # Important: fetch full history so the directory exists
-          fetch-depth: 0
 
       - name: Write SSH private key
         run: |
-          echo "${{ secrets.SSH_KEY }}" > id_rsa.pem
-          chmod 600 id_rsa.pem
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
       - name: Write Ansible Vault password file
         run: |
-          echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > vault-pass.txt
-          chmod 600 vault-pass.txt
+          echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > ./caas/geoip-api/vault-pass.txt
+          chmod 600 ./caas/geoip-api/vault-pass.txt
 
       - name: Install Ansible
         run: python3 -m pip install ansible
 
-      - name: Run Ansible playbook
+      - name: Run Ansible playbook from app/ directory
         run: |
+          cd caas/geoip-api
           ansible-playbook playbooks/install-app.yml \
             -i inventory \
-            --private-key id_rsa.pem \
-            --vault-password-file vault-pass.txt \
+            --private-key ~/.ssh/id_rsa \
+            --vault-password-file ./vault-pass.txt \
             -e "image_tag=${{ needs.build-and-push.outputs.tag }}"
         env:
-          ANSIBLE_HOST_KEY_CHECKING: "false"   # optional – skip host key checking
+          ANSIBLE_HOST_KEY_CHECKING: "false"
