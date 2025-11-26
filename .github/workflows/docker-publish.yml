@@ -67,7 +67,6 @@ jobs:
         run: |
           cd caas/geoip-api
           ansible-playbook playbooks/install-app.yml \
-            -i inventory \
             --private-key ~/.ssh/id_rsa \
             --vault-password-file ./vault-pass.txt \
             -e "image_tag=${{ needs.build-and-push.outputs.tag }}"
