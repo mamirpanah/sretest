@@ -14,10 +14,11 @@
   loop:
     - { src: 'grafana-dashboards.yaml',     dest: 'grafana-dashboards.yaml' }
     - { src: 'grafana-datasources.yaml',  dest: 'grafana-datasources.yaml' }
+    - { src: 'geoip-prometheusrule.yaml',  dest: 'geoip-prometheusrule.yaml' }
 
 - name: Apply grafana manifests
   shell: >
-    kubectl apply -f /tmp/manifests/grafana-dashboards.yaml -f /tmp/manifests/grafana-datasources.yaml
+    kubectl apply -f /tmp/manifests/grafana-dashboards.yaml -f /tmp/manifests/grafana-datasources.yaml -f /tmp/manifests/geoip-prometheusrule.yaml
   args:
     executable: /bin/bash
   environment:

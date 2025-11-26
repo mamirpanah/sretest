@@ -92,9 +92,9 @@
 
 - name: Install helm
   include_role:
-    name: kubectl_install
+    name: kubectl-install
 
 - name: Install helm
   include_role:
-    name: helm_install
+    name: helm-install
 

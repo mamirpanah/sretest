@@ -1,7 +1,7 @@
-k0s-ansible
+Monitoring System
 ===========
 
-Simple Ansible setup to deploy a k0s Kubernetes cluster with flannel networking.
+Simple Ansible setup to deploy a monitoring system on kubernetes with prometheus stack and grafana.
 
 Prerequisites
 -------------
@@ -13,24 +13,23 @@ Prerequisites
 
 Repository layout
 -----------------
-- ansible.cfg — repo Ansible configuration (set default inventory here)
+- ansible.cfg — repo Ansible configuration
 - inventories/hosts.ini — host inventory
-- group_vars/all.yml — global variables (k0s/flannel settings)
-- playbooks/cluster.yml — top-level playbook to bootstrap cluster
+- group_vars/all.yml — global variables
+- playbooks/grafana-prometheus.yml — top-level playbook to bootstrap Prometheus and Grafana operator
+- playbooks/grafana-dashboards.yml — to configure grafana dashboards and datasources
 - roles/
-  - k0s-controller — installs & configures k0s controller
-  - k0s-worker — joins worker nodes to the cluster
-  - flannel — deploys flannel CNI via manifest template
+  - install-grafana-prometheus-stack — installs & configures prometheus and grafana operator
+  - configure-grafana-dashboards — configures grafana dashboards and datasources
 
 Quickstart
 ----------
-1. Review and update inventory: inventories/hosts.ini (controllers and workers).
-2. Adjust cluster variables in group_vars/all.yml (k0s version, controller addresses, network CIDR, etc).
+1. Review and update inventory: inventories/hosts.ini
+2. Adjust cluster variables in group_vars/all.yml
 3. Run the playbook:
-    - cd /Users/mohammad/Downloads/test/sretest/k0s-ansible
+    - cd sretest/caas/monitoring
     - ansible-playbook playbooks/grafana-prometheus.yml
     - ansible-playbook playbooks/grafana-dashboards.yml
-    - ansible-playbook playbooks/postgres-operator.yml
 
 Using ansible.cfg to avoid -i
 -----------------------------
@@ -44,26 +43,3 @@ remote_user = your_ssh_user
 
 With that in place, ansible-playbook will use inventories/hosts.ini automatically.
 
-How it works
-------------
-- `k0s-controller` role installs and configures the k0s controller(s) and writes the join token.
-- `k0s-worker` role uses the controller endpoint and token to join worker nodes.
-- `flannel` role renders `flannel.yaml.j2` and applies it to the cluster.
-
-Idempotency & testing
----------------------
-- Playbooks are written to be idempotent; re-running should not break the cluster.
-- Verify cluster after run:
-  - On a controller: sudo k0s kubectl get nodes
-  - Check pods: sudo k0s kubectl get pods -A
-
-Troubleshooting
----------------
-- Ensure SSH connectivity and privilege escalation.
-- Run with increased verbosity for troubleshooting: ansible-playbook -vvv playbooks/cluster.yml
-- Confirm `k0s` service status on nodes: sudo systemctl status k0s
-
-Notes
------
-- This repository is intentionally minimal; adapt variables and templates to your environment.
-- Do not commit sensitive data (tokens, private keys). Use Ansible Vault for secrets.
