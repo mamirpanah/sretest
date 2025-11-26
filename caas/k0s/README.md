@@ -1,7 +1,7 @@
 k0s-ansible
 ===========
 
-Simple Ansible setup to deploy a k0s Kubernetes cluster with flannel networking.
+Simple Ansible setup to deploy a k0s Kubernetes cluster with Kuberouter networking.
 
 Prerequisites
 -------------
@@ -13,21 +13,23 @@ Prerequisites
 
 Repository layout
 -----------------
-- ansible.cfg — repo Ansible configuration (set default inventory here)
+- ansible.cfg — repo Ansible configuration
 - inventories/hosts.ini — host inventory
-- group_vars/all.yml — global variables (k0s/flannel settings)
+- group_vars/all.yml — global variables (k0s settings)
 - playbooks/cluster.yml — top-level playbook to bootstrap cluster
 - roles/
   - k0s-controller — installs & configures k0s controller
   - k0s-worker — joins worker nodes to the cluster
-  - flannel — deploys flannel CNI via manifest template
+  - k0s-common — for wipe out the k0s
+  - helm-install - installs the helm client on the master node
+  - kubectl-install - installs the kubectl client on the master node
 
 Quickstart
 ----------
 1. Review and update inventory: inventories/hosts.ini (controllers and workers).
-2. Adjust cluster variables in group_vars/all.yml (k0s version, controller addresses, network CIDR, etc).
+2. Adjust cluster variables in group_vars/all.yml (k0s version, etc).
 3. Run the playbook:
-    - cd /Users/mohammad/Downloads/test/sretest/k0s-ansible
+    - cd /sretest/caas/k0s
     - ansible-playbook playbooks/cluster.yml
     - ansible-playbook playbooks/cluster.yml -e "reset_cluster=true"
 
@@ -42,12 +44,6 @@ remote_user = your_ssh_user
 # optional: private_key_file, vault_password_file, forks, etc.
 
 With that in place, ansible-playbook will use inventories/hosts.ini automatically.
-
-How it works
-------------
-- `k0s-controller` role installs and configures the k0s controller(s) and writes the join token.
-- `k0s-worker` role uses the controller endpoint and token to join worker nodes.
-- `flannel` role renders `flannel.yaml.j2` and applies it to the cluster.
 
 Idempotency & testing
 ---------------------
@@ -65,4 +61,3 @@ Troubleshooting
 Notes
 -----
 - This repository is intentionally minimal; adapt variables and templates to your environment.
-- Do not commit sensitive data (tokens, private keys). Use Ansible Vault for secrets.

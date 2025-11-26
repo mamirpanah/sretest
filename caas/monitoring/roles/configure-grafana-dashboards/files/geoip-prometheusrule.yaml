@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: geoip-rules
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+  - name: geoip-alerts
+    rules:
+    - alert: HighRequestIncreasePerCountry
+      expr: rate(country_requests_total[5m]) > 10
+      for: 5m
+      labels:
+        severity: warning
+        country: "{{ $labels.country }}"
+      annotations:
+        summary: "High increase in requests from country {{ $labels.country }}"
+        description: "Requests from {{ $labels.country }} have increased rapidly (current rate: {{ $value }} req/s). Check for anomalies."
+    - alert: NewCountryRequest
+      expr: sum by (country) (country_requests_total offset 1m) == 1
+      for: 1m
+      labels:
+        severity: info
+        country: "{{ $labels.country }}"
+      annotations:
+        summary: "New request from country {{ $labels.country }}"
+        description: "A new country {{ $labels.country }} has started sending requests (value: {{ $value }}). Monitor for potential expansion or threats."

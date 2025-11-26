@@ -1,7 +1,7 @@
-k0s-ansible
+Postgres Cluster
 ===========
 
-Simple Ansible setup to deploy a k0s Kubernetes cluster with flannel networking.
+Simple Ansible setup to deploy a Postgres cluster on kubernetes.
 
 Prerequisites
 -------------
@@ -13,21 +13,21 @@ Prerequisites
 
 Repository layout
 -----------------
-- ansible.cfg — repo Ansible configuration (set default inventory here)
+- ansible.cfg — repo Ansible configuration
 - inventories/hosts.ini — host inventory
-- group_vars/all.yml — global variables (k0s/flannel settings)
-- playbooks/cluster.yml — top-level playbook to bootstrap cluster
+- group_vars/all.yml — global variables
+- playbooks/postgres-operator.yml — top-level playbook to bootstrap postgres operator
+- playbooks/postgres-cluster.yml — top-level playbook to bootstrap postgres cluster
 - roles/
-  - k0s-controller — installs & configures k0s controller
-  - k0s-worker — joins worker nodes to the cluster
-  - flannel — deploys flannel CNI via manifest template
+  - install-postgres-operator — installs & configures postgres operator with Zalando helm chart
+  - install-postgres-cluster — create 3 node postgres cluster 1 master + 2 slaves
 
 Quickstart
 ----------
-1. Review and update inventory: inventories/hosts.ini (controllers and workers).
-2. Adjust cluster variables in group_vars/all.yml (k0s version, controller addresses, network CIDR, etc).
+1. Review and update inventory: inventories/hosts.ini
+2. Adjust cluster variables in group_vars/all.yml
 3. Run the playbook:
-    - cd /Users/mohammad/Downloads/test/sretest/k0s-ansible
+    - cd sretest/caas/database
     - ansible-playbook playbooks/postgres-operator.yml
     - ansible-playbook playbooks/postgres-cluster.yml
 
@@ -43,26 +43,14 @@ remote_user = your_ssh_user
 
 With that in place, ansible-playbook will use inventories/hosts.ini automatically.
 
-How it works
-------------
-- `k0s-controller` role installs and configures the k0s controller(s) and writes the join token.
-- `k0s-worker` role uses the controller endpoint and token to join worker nodes.
-- `flannel` role renders `flannel.yaml.j2` and applies it to the cluster.
-
 Idempotency & testing
 ---------------------
 - Playbooks are written to be idempotent; re-running should not break the cluster.
 - Verify cluster after run:
-  - On a controller: sudo k0s kubectl get nodes
-  - Check pods: sudo k0s kubectl get pods -A
+  - Check the pods: sudo k0s kubectl get pods -n services
+  - Check the services: sudo k0s kubectl get svc -n services
 
 Troubleshooting
 ---------------
 - Ensure SSH connectivity and privilege escalation.
 - Run with increased verbosity for troubleshooting: ansible-playbook -vvv playbooks/cluster.yml
-- Confirm `k0s` service status on nodes: sudo systemctl status k0s
-
-Notes
------
-- This repository is intentionally minimal; adapt variables and templates to your environment.
-- Do not commit sensitive data (tokens, private keys). Use Ansible Vault for secrets.
