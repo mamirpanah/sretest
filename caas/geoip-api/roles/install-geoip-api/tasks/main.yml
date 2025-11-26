@@ -28,7 +28,7 @@
     --create-namespace
     --values /tmp/chart/geoip-api-chart/values.yaml
     --set image.tag={{ image_tag }}
-    --wait --timeout 3m
+    --wait --timeout 10m
   args:
     executable: /bin/bash
   environment:
