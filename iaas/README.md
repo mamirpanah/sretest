@@ -26,7 +26,7 @@ Before applying the Terraform configuration, you need to provide your ArvanCloud
    Alternatively, you can set the API key as an environment variable:
 
    ```bash
-   export ARVAN_API_KEY="YOUR_ARVANCLOUD_API_KEY"
+   export TF_VAR_arvan_api_key="YOUR_ARVANCLOUD_API_KEY"
    ```
 
 ## Usage
