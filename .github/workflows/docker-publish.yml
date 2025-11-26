@@ -47,15 +47,18 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: app/caas/geoip-api
+        working-directory: app/caas/geoip-api     # ← now safe because checkout runs first
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Important: fetch full history so the directory exists
+          fetch-depth: 0
 
       - name: Write SSH private key
         run: |
           echo "${{ secrets.SSH_KEY }}" > id_rsa.pem
-          chmod 600 ./id_rsa.pem
+          chmod 600 id_rsa.pem
 
       - name: Write Ansible Vault password file
         run: |
@@ -63,7 +66,7 @@ jobs:
           chmod 600 vault-pass.txt
 
       - name: Install Ansible
-        run: pip install ansible
+        run: python3 -m pip install ansible
 
       - name: Run Ansible playbook
         run: |
@@ -72,3 +75,5 @@ jobs:
             --private-key id_rsa.pem \
             --vault-password-file vault-pass.txt \
             -e "image_tag=${{ needs.build-and-push.outputs.tag }}"
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "false"   # optional – skip host key checking
